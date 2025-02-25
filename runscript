@@ -1,45 +1,79 @@
 #!/bin/bash
 
-# Script to set up an AI node with Ollama, IPFS, and decentralized communication
+set -e  # Exit immediately if a command exits with a non-zero status
 
-set -e  # Exit on error
+# Install dependencies
+install_dependencies() {
+    echo "Installing required packages..."
+    sudo apt update && sudo apt install -y curl unzip jq
 
-# Install Ollama
-if ! command -v ollama &> /dev/null; then
-    echo "Installing Ollama..."
-    curl -fsSL https://ollama.ai/install.sh | sh
-else
-    echo "Ollama is already installed."
-fi
+    # Install Ollama
+    if ! command -v ollama &> /dev/null; then
+        echo "Installing Ollama..."
+        curl -fsSL https://ollama.ai/install.sh | sh
+    else
+        echo "Ollama is already installed."
+    fi
 
-# Pull Gemma 2B model
-echo "Downloading Gemma:2B model for Ollama..."
-ollama pull gemma:2b
+    # Install IPFS
+    if ! command -v ipfs &> /dev/null; then
+        echo "Installing IPFS..."
+        curl -fsSL https://dist.ipfs.tech/kubo/latest/kubo_v0.23.0_linux-amd64.tar.gz | tar -xz
+        sudo mv kubo/ipfs /usr/local/bin/
+        rm -rf kubo
+    else
+        echo "IPFS is already installed."
+    fi
+}
 
-# Install IPFS
-if ! command -v ipfs &> /dev/null; then
-    echo "Installing IPFS..."
-    curl -fsSL https://dist.ipfs.tech/kubo/latest/install.sh | sh
-else
-    echo "IPFS is already installed."
-fi
+# Configure and initialize IPFS
+setup_ipfs() {
+    echo "Setting up IPFS..."
+    if [ ! -d "$HOME/.ipfs" ]; then
+        ipfs init
+    fi
+    
+    ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '["*"]'
+    ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '["PUT", "POST"]'
+    
+    ipfs bootstrap rm --all
+    ipfs bootstrap add /ip4/104.131.131.82/tcp/4001/ipfs/QmHashExample  # Replace with your bootstrap node
+}
 
-# Initialize and start IPFS daemon
-if [ ! -d "$HOME/.ipfs" ]; then
-    echo "Initializing IPFS..."
-    ipfs init
-fi
+# Download and set up Gemma 2B model for Ollama
+download_gemma() {
+    echo "Downloading Gemma 2B model..."
+    ollama pull gemma:2b
+}
 
-echo "Starting IPFS daemon..."
-ipfs daemon &
-sleep 5  # Wait for IPFS to start
+# Create a systemd service to start Ollama & IPFS on boot
+setup_autostart() {
+    echo "Configuring auto-start services..."
+    
+    cat <<EOF | sudo tee /etc/systemd/system/nova.service
+[Unit]
+Description=Nova AI Node
+After=network.target
 
-# Set up IPFS pub/sub messaging
-TOPIC="ollama-ai-messages"
-echo "Subscribing to topic $TOPIC..."
-ipfs pubsub sub $TOPIC &
+[Service]
+Type=simple
+User=$USER
+ExecStart=/bin/bash -c 'ipfs daemon & ollama serve'
+Restart=always
 
-# Display status
-echo "Setup complete! This node is now running Ollama with Gemma:2B and is connected to IPFS."
-echo "To send a request, publish a message using:"
-echo "echo 'Your message here' | ipfs pubsub pub $TOPIC"
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    sudo systemctl daemon-reload
+    sudo systemctl enable nova.service
+    sudo systemctl start nova.service
+}
+
+# Run all setup functions
+install_dependencies
+setup_ipfs
+download_gemma
+setup_autostart
+
+echo "Nova AI node setup complete!"
