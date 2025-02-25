@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Script to set up an AI node with Ollama, IPFS, and decentralized communication
+
+set -e  # Exit on error
+
+# Install Ollama
+if ! command -v ollama &> /dev/null; then
+    echo "Installing Ollama..."
+    curl -fsSL https://ollama.ai/install.sh | sh
+else
+    echo "Ollama is already installed."
+fi
+
+# Pull Gemma 2B model
+echo "Downloading Gemma:2B model for Ollama..."
+ollama pull gemma:2b
+
+# Install IPFS
+if ! command -v ipfs &> /dev/null; then
+    echo "Installing IPFS..."
+    curl -fsSL https://dist.ipfs.tech/kubo/latest/install.sh | sh
+else
+    echo "IPFS is already installed."
+fi
+
+# Initialize and start IPFS daemon
+if [ ! -d "$HOME/.ipfs" ]; then
+    echo "Initializing IPFS..."
+    ipfs init
+fi
+
+echo "Starting IPFS daemon..."
+ipfs daemon &
+sleep 5  # Wait for IPFS to start
+
+# Set up IPFS pub/sub messaging
+TOPIC="ollama-ai-messages"
+echo "Subscribing to topic $TOPIC..."
+ipfs pubsub sub $TOPIC &
+
+# Display status
+echo "Setup complete! This node is now running Ollama with Gemma:2B and is connected to IPFS."
+echo "To send a request, publish a message using:"
+echo "echo 'Your message here' | ipfs pubsub pub $TOPIC"
