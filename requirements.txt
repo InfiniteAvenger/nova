@@ -1,0 +1,7 @@
+flask
+ipfshttpclient
+requests
+ollama
+numpy
+torch
+transformers
