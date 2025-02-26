@@ -4,14 +4,20 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# Copy Nova files into the container
-COPY . .
-
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install necessary dependencies
+RUN apt update && apt install -y curl
 
 # Install Ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh
+
+# Ensure Ollama is available in PATH
+ENV PATH="/root/.ollama/bin:$PATH"
+
+# Copy Nova files into the container
+COPY . .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Download the LLM model (Change if using a different model)
 RUN ollama pull gemma:2b
