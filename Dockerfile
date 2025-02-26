@@ -20,11 +20,8 @@ RUN curl -fsSL https://ollama.com/install.sh | sh && \
 # Ensure Ollama is in PATH for all subsequent commands
 ENV PATH="/root/.ollama/bin:$PATH"
 
-# Verify Ollama installation
-RUN /usr/local/bin/ollama --version
-
-# Download the LLM model (Change if using a different model)
-RUN /usr/local/bin/ollama pull gemma:2b
+# Start Ollama in the background and pull the model
+RUN /usr/local/bin/ollama serve & sleep 5 && /usr/local/bin/ollama pull gemma:2b
 
 # Expose the necessary port
 EXPOSE 11434
