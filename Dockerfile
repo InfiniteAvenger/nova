@@ -15,7 +15,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Ollama
 RUN curl -fsSL https://ollama.com/install.sh | sh && \
-    ln -s /root/.ollama/bin/ollama /usr/local/bin/ollama
+    if [ ! -f "/usr/local/bin/ollama" ]; then ln -s /root/.ollama/bin/ollama /usr/local/bin/ollama; fi
 
 # Ensure Ollama is in PATH for all subsequent commands
 ENV PATH="/root/.ollama/bin:$PATH"
