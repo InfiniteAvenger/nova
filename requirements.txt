@@ -1,7 +1,5 @@
-flask
-ipfshttpclient
-requests
-ollama
-numpy
-torch
-transformers
+flask  # If you're using Flask for a web app
+requests  # If you're making API calls
+pandas  # If you're working with data
+numpy  # If you're doing numerical computations
+ollama  # Ollama's Python client, if applicable
