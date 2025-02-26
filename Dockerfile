@@ -14,17 +14,16 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh && \
-    if [ ! -f "/usr/local/bin/ollama" ]; then ln -s /root/.ollama/bin/ollama /usr/local/bin/ollama; fi
+RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Ensure Ollama is in PATH for all subsequent commands
+# Ensure Ollama is in PATH
 ENV PATH="/root/.ollama/bin:$PATH"
 
-# Start Ollama in the background and pull the model
-RUN /usr/local/bin/ollama serve & sleep 5 && /usr/local/bin/ollama pull gemma:2b
+# Pull the Ollama model before runtime
+RUN /root/.ollama/bin/ollama pull gemma:2b
 
 # Expose the necessary port
 EXPOSE 11434
 
-# Start the application (modify based on your app)
-ENTRYPOINT ["python", "main.py"]
+# Start Ollama as a background process & run the app
+CMD /root/.ollama/bin/ollama serve & sleep 2 && python main.py
