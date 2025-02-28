@@ -14,10 +14,9 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh && mv /root/.ollama/bin/ollama /usr/local/bin/
+RUN curl -fsSL https://ollama.com/install.sh | sh
 
-# Ensure Ollama is in PATH
-ENV PATH="/usr/local/bin:$PATH"
+# Set Ollama environment variables
 ENV OLLAMA_HOME="/root/.ollama"
 
 # Pull the Ollama model before runtime
