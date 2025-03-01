@@ -22,8 +22,11 @@ ENV OLLAMA_HOME="/root/.ollama"
 # Pull the Ollama model before runtime
 RUN ollama serve & sleep 5 && ollama pull gemma:2b
 
+# Ensure main.py exists
+RUN test -f /app/main.py || (echo "Error: main.py not found!" && exit 1)
+
 # Expose the necessary port
 EXPOSE 11434
 
-# Start Ollama as a background process & run the app
-CMD ["sh", "-c", "ollama serve & sleep 2 && python main.py"]
+# Start Ollama first, then run the app
+CMD ["sh", "-c", "ollama serve & sleep 5 && exec python /app/main.py"]
