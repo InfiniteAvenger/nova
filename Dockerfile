@@ -20,7 +20,7 @@ RUN curl -fsSL https://ollama.com/install.sh | sh
 ENV OLLAMA_HOME="/root/.ollama"
 
 # Pull the Ollama model before runtime
-RUN ollama pull gemma:2b
+RUN ollama serve & sleep 5 && ollama pull gemma:2b
 
 # Expose the necessary port
 EXPOSE 11434
