@@ -14,19 +14,19 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Ollama
-RUN curl -fsSL https://ollama.com/install.sh | sh
+RUN curl -fsSL https://ollama.com/install.sh | bash
 
 # Set Ollama environment variables
 ENV OLLAMA_HOME="/root/.ollama"
 
 # Pull the Ollama model before runtime
-RUN ollama serve & sleep 5 && ollama pull gemma:2b
+RUN ollama pull gemma:2b
 
 # Ensure main.py exists
 RUN test -f /app/main.py || (echo "Error: main.py not found!" && exit 1)
 
-# Expose the necessary port
-EXPOSE 11434
+# Expose the necessary ports
+EXPOSE 11434 8000
 
-# Start Ollama first, then run the app
-CMD ["sh", "-c", "ollama serve & sleep 5 && exec python /app/main.py"]
+# Start Ollama in the background and run the app
+CMD ["sh", "-c", "ollama serve --host 0.0.0.0 & sleep 5 && exec python /app/main.py"]
