@@ -20,14 +20,11 @@ RUN curl -fsSL https://ollama.com/install.sh | bash
 ENV OLLAMA_HOME="/root/.ollama"
 ENV OLLAMA_HOST="0.0.0.0:11434"
 
-# Pull the Ollama model before runtime
-RUN ollama pull gemma:2b
-
 # Ensure main.py exists
-RUN test -f /app/main.py || (echo "Error: main.py not found!" && exit 1)
+RUN test -f /app/main.py || (echo 'Error: main.py not found!' && exit 1)
 
 # Expose the necessary ports
 EXPOSE 11434 8000
 
-# Start Ollama in the background and run the app
-CMD ["sh", "-c", "ollama serve --host 0.0.0.0 & sleep 5 && exec python /app/main.py"]
+# Start Ollama in the background, wait for it to initialize, then pull the model and run the app
+CMD ["sh", "-c", "ollama serve --host 0.0.0.0 & sleep 5 && ollama pull gemma:2b && exec python /app/main.py"]
