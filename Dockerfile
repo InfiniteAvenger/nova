@@ -18,6 +18,7 @@ RUN curl -fsSL https://ollama.com/install.sh | bash
 
 # Set Ollama environment variables
 ENV OLLAMA_HOME="/root/.ollama"
+ENV OLLAMA_HOST="0.0.0.0:11434"
 
 # Pull the Ollama model before runtime
 RUN ollama pull gemma:2b
